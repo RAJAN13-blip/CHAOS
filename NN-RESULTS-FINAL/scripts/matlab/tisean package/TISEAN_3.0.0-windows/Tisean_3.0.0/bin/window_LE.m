@@ -1,45 +1,44 @@
 
 close all;
 clear all;
-                                  %make folder from here onwards --> and
-                                  %the following string should be the same
-                                  %across all systems wherever it is
-                                  %supposed to be used
+                                %make folder from here onwards --> and
+                                %the following string should be the same
+                                %across all systems wherever it is
+                                %supposed to be used
 
 
-wpath = "C:\Users\91993\Desktop\NN-RESULTS-FINAL\datasets\initializations\vowel\window_le";
-
-
-
-    
+wpath = "C:\Users\91993\Desktop\chaos\NN-RESULTS-FINAL\datasets\initializations\diabetes\window_le";
 
 
 
-  
-  fullFileName = "c:\Users\91993\Desktop\NN-RESULTS-FINAL\datasets\initializations\vowel\weight_profiles\vowel-3_weights.csv"
-  
-  
-  data = csvread(fullFileName);
-  samp = size(data,2);
-%   windows = 55;
-  LE = zeros(samp,193);
-  csvfilename = "window_LE_"+num2str(k)+".csv";
+
+fullFileName = "C:\Users\91993\Desktop\chaos\NN-RESULTS-FINAL\datasets\initializations\diabetes\weight_profiles\diabetes-2_weights.csv";
+
+
+data = csvread(fullFileName);
+samp = size(data,2);
+
+LE = [];
+  csvfilename = "\\window_LE_"+num2str(2)+".csv";
   for m = 1:samp
       timeseries = data(:,m);
       le = [];
-      for i = 0:192
+      for i = 0:169
         x = timeseries(180*i+1:180*(i+1)+20.0);
         y = L_E(x);
+    
         M = Slope(y);
         lslope = verify(M,i);
+   
+  
         le = [le,lslope];
                 
       end
         LE = [LE;le];
   end
     csvwrite(wpath+csvfilename,LE);
-  
-  
+
+
 
 
 

@@ -31,10 +31,15 @@ new_init = True
 #----------------------------------------------------------------------------------------#
 init_path = os.path.join(path,"initializations")
 path_initializations = f'{init_path}\\{data_curr}'
-list_init = os.listdir(path_initializations)
+try:
+    list_init = os.listdir(path_initializations)
+except:
+    os.mkdir(path_initializations)
+    list_init = os.listdir(path_initializations)
+
 numbers = []
 
-# print(list_init)
+print(list_init)
 
 for items in list_init:
     if(re.search(f'{data_curr}',items)):

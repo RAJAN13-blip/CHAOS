@@ -21,7 +21,7 @@ def onehot(Y_dev,num_classes,zero_indexed=False):
 
 
 def prepare_dataset(X_train,Y_train,X_test,Y_test,params,zero_index):
-    min_max_scaler = preprocessing.MinMaxScaler()
+    min_max_scaler = preprocessing.StandardScaler()
     
     X_train = min_max_scaler.fit_transform(X_train.T)
     X_train = X_train.T
@@ -61,6 +61,31 @@ def vowel(datapath,params,train_size=0.80):
     X_train,Y_train,X_test,Y_test = prepare_dataset(X_train,Y_train,X_test,Y_test,params,False)
 
     return X_train,Y_train,X_test,Y_test
+
+def diabetes(datapath,params,train_size=0.70):
+    
+    path = os.path.join(datapath,"diabetes_run.csv")
+    data = pd.read_csv(path)
+    data = np.array(data)
+
+
+    np.random.seed(42)  
+    np.random.shuffle(data)
+
+    train_index = int(train_size*len(data))
+
+    X_train = data[:train_index,:8]
+    X_test = data[train_index:,:8]   
+    
+    Y_train = data[:train_index,8]
+    Y_test = data[train_index:,8]
+
+    X_train,Y_train,X_test,Y_test = prepare_dataset(X_train,Y_train,X_test,Y_test,params,False)
+
+    return X_train,Y_train,X_test,Y_test
+
+
+
 
 def iris(datapath,train_size=0.80,reduced = False):
     
@@ -103,33 +128,25 @@ def iris(datapath,train_size=0.80,reduced = False):
 
 
 
-def sonar(datapath,train_size=0.80):
-    path = os.path.join(datapath,"sonar.csv")
+def sonar(datapath,params,train_size=0.80):
+    path = os.path.join(datapath,"binary_sonar.csv")
     
     data = pd.read_csv(path)
     data = np.array(data)
 
     m,n = data.shape
-    np.random.seed(42)  
+
     np.random.shuffle(data)
 
-    data_train = data[:146]
+    train_index = int(train_size*len(data))
 
-    Y_train = data_train[:,60]
-    X_train = data_train[:,:60]
-
-    data_test = data[146:m]
-
-    Y_test = data_test[:,60]
-    X_test = data_test[:,:60]
+    X_train = data[:train_index,:-1]
+    X_test = data[train_index:,:-1]   
     
-    sc = preprocessing.StandardScaler()
-    
-    X_train = sc.fit_transform(X_train)
-    X_train = X_train.T
+    Y_train = data[:train_index,-1]
+    Y_test = data[train_index:,-1]
 
-    X_test = sc.fit_transform(X_test)
-    X_test = X_test.T
+    X_train,Y_train,X_test,Y_test = prepare_dataset(X_train,Y_train,X_test,Y_test,params,True)
     
     return X_train,Y_train,X_test,Y_test
 
@@ -183,3 +200,23 @@ def titanic(datapath,train_size=0.80):
 
 
 
+def liver(datapath,params,train_size = 0.8):
+    path = os.path.join(datapath,"Indian Liver Patient.csv")
+    data = pd.read_csv(path)
+    data.dropna(inplace = True)
+    data = np.array(data)
+    m,n = data.shape
+    
+    np.random.shuffle(data)
+
+    train_index = int(train_size*len(data))
+
+    X_train = data[:train_index,:-1]
+    X_test = data[train_index:,:-1]   
+    
+    Y_train = data[:train_index,-1]
+    Y_test = data[train_index:,-1]
+
+    X_train,Y_train,X_test,Y_test = prepare_dataset(X_train,Y_train,X_test,Y_test,params,False)
+
+    return X_train,Y_train,X_test,Y_test

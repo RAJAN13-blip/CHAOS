@@ -43,6 +43,7 @@ def parameter_file(data_name,path,initialization,new_init):
         ]   
         
         # 3-4-6
+
         
         if not new_init:
             init =  os.path.join(init_path,f"{data_name}\\{data_name}-{initialization}.npy")
@@ -66,6 +67,38 @@ def parameter_file(data_name,path,initialization,new_init):
       
         return params
     
+    elif data_name == "diabetes":
+
+        network = [
+            Dense(8,6),
+            Tanh(),
+            Dense(6,2),
+            Sigmoid()
+        ]
+
+        if not new_init:
+            init =  os.path.join(init_path,f"{data_name}\\{data_name}-{initialization}.npy")
+            weights = np.load(init,allow_pickle=True)
+            network = initialize_Weights(network,weights)
+        else:
+            weights = store_weights(network=network)
+            network = initialize_Weights(network,weights)
+
+        params = {}
+
+        params['init'] = weights
+        params['learning_rate'] = 0.2
+        params['num_epochs'] = 50
+        params['num_classes'] = 2
+        params['num_features'] = 8
+        params['loss'] = 'mse'
+        params['data'] = diabetes(dataset_path,params,0.8)
+        params['network'] = network
+
+      
+        return params        
+        
+    
     elif data_name == "iris":
         
         alpha = 0.05     # learning rate
@@ -80,19 +113,41 @@ def parameter_file(data_name,path,initialization,new_init):
         # 6-3/4-3
         return 
 
-    elif data_name == "sonar":
-        data = 'Sonar' # Vowel | Sonar | 
-        path = "C:\\Users\\shiva\\chaos dyn\\Results\\Sonar\\"    # folder where the weights will be stored
-        alpha = 0.05     # learning rate
-        num_iterations = 150  # epochs
-        init = 0.100   # Initial value of the chosen weight 
-        init_words = 'point 1' # subdirectory name for init, create a dircetory by this name in the path folder
-        perturb = 0.001  # perturbation to add to the weight
-        lip_lr = False    # use lipshitz learning rate
-        loss = 'mse'  
+    elif data_name == "binary_sonar":
+
+        network = [
+        Dense(60,4), 
+        Sigmoid(),
+        Dense(4,15),  
+        Sigmoid(),
+        Dense(15,2),
+        Softmax()
+        ]   
+        
+        # 3-4-6
+
+        
+        if not new_init:
+            init =  os.path.join(init_path,f"{data_name}\\{data_name}-{initialization}.npy")
+            weights = np.load(init,allow_pickle=True)
+            network = initialize_Weights(network,weights)
+        else:
+            weights = store_weights(network=network)
+            network = initialize_Weights(network,weights)
+
+        params = {}
+
+        params['init'] = weights
+        params['learning_rate'] = 0.2
+        params['num_epochs'] = 50
+        params['num_classes'] = 2
+        params['num_features'] = 60
+        params['loss'] = 'mse'
+        params['data'] = sonar(dataset_path,params,0.8)
+        params['network'] = network
+
       
-        # 60-4-1  
-        return 
+        return params
 
 
     elif data_name == "titanic":
@@ -106,11 +161,39 @@ def parameter_file(data_name,path,initialization,new_init):
         
         return 
 
-    elif data_name == "liver":
-        
+    elif data_name == "Indian Liver Patient":
+
+        network = [
+            Dense(10,5),
+            Tanh(),
+            Dense(5,2),
+            Sigmoid()
+        ]
+
+        if not new_init:
+            init =  os.path.join(init_path,f"{data_name}\\{data_name}-{initialization}.npy")
+            weights = np.load(init,allow_pickle=True)
+            network = initialize_Weights(network,weights)
+        else:
+            weights = store_weights(network=network)
+            # network = initialize_Weights(network,weights)
+
+        params = {}
+
+        params['init'] = weights
+        params['learning_rate'] = 0.08
+        params['num_epochs'] = 50
+        params['num_classes'] = 2
+        params['num_features'] = 10
+        params['loss'] = 'mse'
+        params['data'] = liver(dataset_path,params,0.8)
+        params['network'] = network
+
+      
+        return params               
       
         
-        return 
+    
 
     
     
