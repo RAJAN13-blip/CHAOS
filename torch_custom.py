@@ -14,25 +14,31 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 class MNIST(nn.Module):
     def __init__(self,input_size, num_classes):
         super(MNIST,self).__init__()
-        self.fc1 = nn.Linear(input_size,50)
-        self.fc2 = nn.Linear(50,num_classes)
+        self.fc1 = nn.Linear(input_size,5)
+        self.fc2 = nn.Linear(5,15)
+        self.fc3 = nn.Linear(15,num_classes)
         self.softmax = nn.Softmax(dim=1)
+        self.sigmoid = nn.Sigmoid()
+        self.relu = nn.ReLU()
 
     def forward(self,x):
-        x = torch.sigmoid(self.fc1(x))
+        x = self.relu(self.fc1(x))
         x = self.fc2(x)
+        x = self.relu(x)
+        x = self.fc3(x)
         x = self.softmax(x)
         return x 
 
     def mask(self,model_tensor): 
         self.fc1.weight = torch.nn.parameter.Parameter(model_tensor['fc1']*self.fc1.weight)
         self.fc2.weight = torch.nn.parameter.Parameter(model_tensor['fc2']*self.fc2.weight)
+        self.fc3.weight = torch.nn.parameter.Parameter(model_tensor['fc3']*self.fc3.weight)
 
 class MNISTDataset(Dataset):
     def __init__(self, datapath,train,size):
         self.data = pd.read_csv(datapath)
         arr_data = np.array(self.data,dtype=np.float64)
-        np.random.shuffle(arr_data)
+        
         if train==True:
             arr_data = arr_data[:int(size*len(arr_data))]
         else : 
@@ -84,20 +90,20 @@ def get_weights(model:nn.Module,model_dict):
 
     return model_dict
 
-def get_accuracy(model:nn.Module, dataloader):
+def get_accuracy(model:nn.Module, dataloader,device):
     model.eval()
     n_correct = 0
     n_samples = 0
     with torch.no_grad():
         for data,targets in dataloader:
             data = data.to(device)
-            temp_targets = targets
-            targets = F.one_hot(targets.long(),num_classes=10)
+            
             targets = targets.to(device)
             outputs = model(data)
-            _, predictions = torch.max(outputs,1)
+            predictions = torch.argmax(outputs,1)
+            targets = torch.argmax(targets,1)
             n_samples += targets.shape[0]
-            n_correct += (predictions == temp_targets).float().sum()
+            n_correct += (predictions == targets).sum().tolist()
 
     acc = 100*n_correct/n_samples
     return acc

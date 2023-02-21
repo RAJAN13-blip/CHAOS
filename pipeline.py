@@ -3,7 +3,7 @@ import tqdm
 
 initialization = 1
 
-datapath = r"C:\\Users\\91993\\Desktop\\chaos\\NN-RESULTS-FINAL\\datasets\\data\\mnist_train.csv"
+datapath = r"mnist.csv"
 
 """
 MODEL INTITIALIZATION AND SETTING UP THE HYPERPARAMETERS
@@ -16,7 +16,7 @@ test_datasets = MNISTDataset(datapath,train=False,size=train_size)
 dataloader = DataLoader(dataset=datasets,batch_size=64,shuffle=True)
 testloader = DataLoader(dataset=test_datasets,batch_size=64)
 
-num_epochs = 5
+num_epochs = 50
 model_keys = []
 model_shapes = []
 learning_rate = 0.1
@@ -25,6 +25,9 @@ model_keys, model_shapes = model_summary(model)
 zipped = zip(model_keys,model_shapes)
 model_dict = {f'{k}':np.arange(t) for k,t in zipped}
 n_total_steps = len(dataloader)
+print(n_total_steps)
+
+torch.save(model.state_dict(), "model_1.pth")
 
 criterion = nn.MSELoss()
 optimizer = torch.optim.SGD(model.parameters(),lr=learning_rate)
@@ -41,11 +44,10 @@ for epoch in range(num_epochs):
  
     model.train()
     for i,(data,targets) in enumerate(dataloader):
-        model_dict = get_weights(model=model,model_dict=model_dict)
+        # model_dict = get_weights(model=model,model_dict=model_dict)
        
         data = data.to(device)
         temp_targets = targets
-        targets = F.one_hot(targets.long(),num_classes=10)
         targets = targets.float()
 
         targets = targets.to(device)
@@ -59,11 +61,10 @@ for epoch in range(num_epochs):
         loss.backward()
         optimizer.step()
 
-        train_acc.append(get_accuracy(model=model,dataloader=dataloader))
-        test_acc.append(get_accuracy(model=model,dataloader=dataloader))
-
         if(i+1)%100==0:
             print(f'epoch {epoch+1} / {num_epochs}, step {i+1}/{n_total_steps}, loss = {loss.item():.4f}')
+    train_acc.append(get_accuracy(model=model,dataloader=dataloader,device=device))
+    test_acc.append(get_accuracy(model=model,dataloader=testloader,device=device))
 
 
 
@@ -80,7 +81,11 @@ df = df.iloc[1:]
 df2 = pd.DataFrame(model_dict['fc2'])
 df2 = df2.iloc[1:]
 
-final_df = pd.concat([df,df2],axis=1)
+df3 = pd.DataFrame(model_dict['fc3'])
+df3 = df3.iloc[1:]
+
+
+final_df = pd.concat([df,df2,df3],axis=1)
 new_axis = [k for k in range(final_df.shape[1])]
 final_df.set_axis(new_axis, axis = 1, inplace=True)
 
@@ -90,6 +95,8 @@ final_df.to_csv(f"weights{initialization}.csv")
 1. store ( intitial) weights at the beginning
 2. store train_acc, store test_acc
 """
+
+
 
 df_train = pd.DataFrame(train_acc)
 df_test  = pd.DataFrame(test_acc)
