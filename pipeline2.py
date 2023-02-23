@@ -2,39 +2,36 @@ from torch_custom import *
 import bisect 
 
 
+initialization = 1
 
-model = MNIST(784,10)
-model.load_state_dict("model_weights.pth")
-model.to(device)
+name = f"weights{initialization}.csv"
+train_acc = f"train_accuracies{initialization}.csv"
+test_acc = f"test_accuracies{initialization}.csv"
 
-datapath = r"C:\\Users\\91993\\Desktop\\chaos\\NN-RESULTS-FINAL\\datasets\\data\\mnist_train.csv"
+datapath = r"mnist.csv"
 
-"""
-MODEL INTITIALIZATION AND SETTING UP THE HYPERPARAMETERS
-"""
-model = MNIST(784,10).to(device)
+model = MNIST(784,10).to(device) #change the model definition from the torch_custom file to test on other datasets
 train_size = 0.7
-datasets = MNISTDataset(datapath,train=True,size=train_size)
+datasets = MNISTDataset(datapath,train=True,size=train_size) #change the dataset class from the torch_custom file
 test_datasets = MNISTDataset(datapath,train=False,size=train_size)
+batch_size = 64
+dataloader = DataLoader(dataset=datasets,batch_size=batch_size,shuffle=True)
+testloader = DataLoader(dataset=test_datasets,batch_size=batch_size)
 
-dataloader = DataLoader(dataset=datasets,batch_size=64,shuffle=True)
-testloader = DataLoader(dataset=test_datasets,batch_size=64)
-
-num_epochs = 5
+num_epochs = 4
 model_keys = []
 model_shapes = []
-learning_rate = 0.1
+learning_rate = 0.01
 
-model_keys, model_shapes = model_summary(model)
-zipped = zip(model_keys,model_shapes)
-model_dict = {f'{k}':np.arange(t) for k,t in zipped}
+
 n_total_steps = len(dataloader)
+print(n_total_steps)
+
+torch.save(model.state_dict(), "model_1.pth")
 
 criterion = nn.MSELoss()
 optimizer = torch.optim.SGD(model.parameters(),lr=learning_rate)
 
-train_acc = []
-test_acc = []
 
 
 model_tensors = {k:[] for k in model_keys}
@@ -63,16 +60,8 @@ for epoch in range(num_epochs):
 
         optimizer.step()
 
-        train_acc.append(get_accuracy(model=model,dataloader=dataloader))
-        test_acc.append(get_accuracy(model=model,dataloader=dataloader))
+        get_accuracy(model=model,name =train_acc,dataloader=dataloader,save_weights=True)
+        get_accuracy(model=model,name = test_acc,dataloader=testloader,save_weights=True)
 
-"""
-
-"""
-
-
-df_train = pd.DataFrame(train_acc)
-df_test  = pd.DataFrame(test_acc)
-
-df_train.to_csv("train_accuracies_sparse.csv",index=False,header=False)
-df_test.to_csv("test_accuracies_sparse.csv",index=False,header=False)
+    print(epoch,train_acc,get_accuracy(model=model,name =train_acc,dataloader=dataloader))
+    print(epoch,test_acc,get_accuracy(model=model,name = test_acc,dataloader=testloader))

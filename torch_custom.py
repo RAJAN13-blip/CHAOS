@@ -6,6 +6,7 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms 
 import matplotlib.pyplot as plt
+import csv
 
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -14,9 +15,10 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 class MNIST(nn.Module):
     def __init__(self,input_size, num_classes):
         super(MNIST,self).__init__()
-        self.fc1 = nn.Linear(input_size,5)
-        self.fc2 = nn.Linear(5,15)
-        self.fc3 = nn.Linear(15,num_classes)
+        self.fc1 = nn.Linear(input_size,15)
+        self.fc2 = nn.Linear(15,30)
+        self.fc3 = nn.Linear(30,10)
+        self.fc4 = nn.Linear(10,num_classes)
         self.softmax = nn.Softmax(dim=1)
         self.sigmoid = nn.Sigmoid()
         self.relu = nn.ReLU()
@@ -26,6 +28,8 @@ class MNIST(nn.Module):
         x = self.fc2(x)
         x = self.relu(x)
         x = self.fc3(x)
+        x = self.relu(x)
+        x = self.fc4(x)
         x = self.softmax(x)
         return x 
 
@@ -33,6 +37,7 @@ class MNIST(nn.Module):
         self.fc1.weight = torch.nn.parameter.Parameter(model_tensor['fc1']*self.fc1.weight)
         self.fc2.weight = torch.nn.parameter.Parameter(model_tensor['fc2']*self.fc2.weight)
         self.fc3.weight = torch.nn.parameter.Parameter(model_tensor['fc3']*self.fc3.weight)
+        self.fc4.weight = torch.nn.parameter.Parameter(model_tensor['fc4']*self.fc4.weight)
 
 class MNISTDataset(Dataset):
     def __init__(self, datapath,train,size):
@@ -90,7 +95,33 @@ def get_weights(model:nn.Module,model_dict):
 
     return model_dict
 
-def get_accuracy(model:nn.Module, dataloader,device):
+
+
+
+def save_weights(model:nn.Module,name):
+    """
+    check whether model is instance of nn.Module
+    """
+    W = []
+    for layer, param in model.named_parameters():
+        if layer.split(".")[1]=="weight":
+            # index = name.split(".")[0]
+            temp_tensor = param.clone()
+            temp_weights = temp_tensor.detach().cpu().numpy()
+            temp_weights = temp_weights.reshape(-1)
+            W.extend(temp_weights.tolist())
+
+    with open(name,'a',newline='') as file:
+        writer = csv.writer(file, delimiter=',')
+        writer.writerow(W)
+    file.close()
+    
+
+    
+
+
+
+def get_accuracy(model:nn.Module, name,dataloader,device,save_weights = False):
     model.eval()
     n_correct = 0
     n_samples = 0
@@ -106,4 +137,10 @@ def get_accuracy(model:nn.Module, dataloader,device):
             n_correct += (predictions == targets).sum().tolist()
 
     acc = 100*n_correct/n_samples
-    return acc
+    if save_weights:
+        with open(name,'a',newline='') as file:
+            writer = csv.writer(file, delimiter=',')
+            writer.writerow([acc])
+        file.close()
+    else:
+        return acc
